@@ -5,6 +5,14 @@ require('dotenv').config();
 
 // Database Connection
 const sequelize = require('./database');
+sequelize
+  .sync()
+  .then(() => {
+    console.log('✅ Database synced successfully');
+  })
+  .catch(err => {
+    console.error('❌ Error syncing database:', err);
+  });
 
 // Import Models
 const Customer = require('./models/Customer');
@@ -34,15 +42,12 @@ app.get('/', (req, res) => {
   res.send('Work Order Tracking API is running!');
 });
 
-// Sync models and start server
-sequelize
-  .sync({ alter: false })
-  .then(() => {
-    console.log('Database schema updated.');
-    app.listen(process.env.PORT || 3001, () => {
-      console.log(`Server running on port ${process.env.PORT || 3001}`);
-    });
-  })
+// **Fix: Use Render's PORT variable**
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
   .catch((err) => {
     console.error('Error syncing database:', err);
   });
