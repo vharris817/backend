@@ -1,3 +1,9 @@
+console.log('Connecting to database:', {
+  host: process.env.DB_HOST || 'dpg-cuqug0l2ng1s73fbdg70-a.oregon-postgres.render.com',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'workorders_qpn0',
+  username: process.env.DB_USER || 'vharris',
+});
 module.exports = {
     production: {
       username: process.env.DB_USER || 'vharris',
