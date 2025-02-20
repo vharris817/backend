@@ -3,6 +3,13 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config();
 
+console.log('Connecting to database:', {
+  host: process.env.DB_HOST || 'dpg-cuqug0l2ng1s73fbdg70-a.oregon-postgres.render.com',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'workorders_qpn0',
+  username: process.env.DB_USER || 'vharris',
+});
+
 // Database Connection
 const sequelize = require('./database');
 sequelize
