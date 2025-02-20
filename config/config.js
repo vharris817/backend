@@ -1,23 +1,26 @@
-console.log('Connecting to database:', {
-  host: process.env.DB_HOST || 'dpg-cuqug0l2ng1s73fbdg70-a.oregon-postgres.render.com',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'workorders_qpn0',
-  username: process.env.DB_USER || 'vharris',
-});
-module.exports = {
-    production: {
-      username: process.env.DB_USER || 'vharris',
-      password: process.env.DB_PASSWORD || 'G7Vfiqmo10bO0B7DZXYt9JpWo8L9vMT6',
-      database: process.env.DB_NAME || 'workorders_qpn0',
-      host: process.env.DB_HOST || 'dpg-cuqug0l2ng1s73fbdg70-a.oregon-postgres.render.com',
-      dialect: 'postgres',
-      port: process.env.DB_PORT || 5432,
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false, // Important for Render PostgreSQL
-        },
-      },
-    },
-  };
-  
+const { Sequelize } = require('sequelize');
+
+// Set the environment (default to 'production')
+const env = process.env.NODE_ENV || 'production';
+
+// Load the configuration for the current environment
+const config = require('./config.js')[env];
+
+// Log the configuration being used
+console.log('Initializing Sequelize with config:', config);
+
+// Initialize Sequelize
+const sequelize = new Sequelize(config);
+
+// Test the database connection
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch((error) => {
+    console.error('Unable to connect to the database:', error);
+  });
+
+// Export the Sequelize instance for use in other parts of the application
+module.exports = sequelize;
