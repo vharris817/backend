@@ -17,7 +17,8 @@ const WorkOrderDetails = sequelize.define('WorkOrderDetails', {
   total: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
-  }, {
+  }
+}, {  // ✅ Corrected closing bracket placement
   tableName: 'workorderdetails', // ✅ Ensure lowercase table name
   timestamps: true
 });
