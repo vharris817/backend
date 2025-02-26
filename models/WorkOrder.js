@@ -9,7 +9,7 @@ const WorkOrder = sequelize.define('WorkOrder', {
   dueDate: { type: DataTypes.DATE },
   customerId: { type: DataTypes.INTEGER, allowNull: false },
 }, {
-  tableName: 'WorkOrders',
+  tableName: 'workorders',
   timestamps: true // ✅ Ensures `createdAt` and `updatedAt` are auto-handled
 });
 
