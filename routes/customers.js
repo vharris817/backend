@@ -1,7 +1,22 @@
 // backend/routes/customers.js
 const express = require('express');
 const router = express.Router();
-const Customer = require('../models/Customer'); // Assuming you're using a model
+const sequelize = require('../database'); // Import Sequelize instance
+const Customer = require('../models/Customer');
+
+// Debug: Manually run a raw SQL query
+router.get('/debug', async (req, res) => {
+  try {
+    console.log("🔍 Running raw SQL query...");
+    const [results] = await sequelize.query("SELECT * FROM customers LIMIT 5;");
+    console.log("✅ Raw query results:", results);
+
+    res.json(results); // Send results to client
+  } catch (error) {
+    console.error("❌ Error running raw SQL query:", error);
+    res.status(500).json({ error: "Database query failed" });
+  }
+});
 
 // Fetch all customers
 router.get('/', async (req, res) => {
