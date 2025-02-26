@@ -17,7 +17,9 @@ const WorkOrderDetails = sequelize.define('WorkOrderDetails', {
   total: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
-  },
+  }, {
+  tableName: 'workorderdetails', // ✅ Ensure lowercase table name
+  timestamps: true
 });
 
 module.exports = WorkOrderDetails;
