@@ -2,34 +2,21 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../database');
 
 const Customer = sequelize.define('Customer', {
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  address: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  phone: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  vehicleVIN: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  mileage: {
+  id: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    autoIncrement: true,
+    primaryKey: true
   },
-  licensePlate: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+  name: DataTypes.STRING,
+  address: DataTypes.STRING,
+  phone: DataTypes.STRING,
+  email: DataTypes.STRING,
+  vehicleVIN: DataTypes.STRING,
+  mileage: DataTypes.INTEGER,
+  licensePlate: DataTypes.STRING
+}, {
+  tableName: 'customers', // ✅ Ensure lowercase table name
+  timestamps: true
 });
 
 module.exports = Customer;
