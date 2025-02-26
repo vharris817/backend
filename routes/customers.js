@@ -3,14 +3,16 @@ const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer'); // Assuming you're using a model
 
-// Get all customers
+// Fetch all customers
 router.get('/', async (req, res) => {
   try {
+    console.log("Fetching customers...");
     const customers = await Customer.findAll();
+    console.log("Customers retrieved:", customers);
     res.json(customers);
   } catch (error) {
-    console.error('Error fetching customers:', error);
-    res.status(500).json({ error: 'Failed to fetch customers' });
+    console.error("Error fetching customers:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
