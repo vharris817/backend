@@ -6,12 +6,18 @@ const Customer = require('../models/Customer'); // Assuming you're using a model
 // Fetch all customers
 router.get('/', async (req, res) => {
   try {
-    console.log("Fetching customers...");
+    console.log("🔍 Fetching customers..."); // Log in Render logs
     const customers = await Customer.findAll();
-    console.log("Customers retrieved:", customers);
+    
+    if (customers.length === 0) {
+      console.log("⚠️ No customers found!");
+      return res.status(404).json({ message: "No customers found" });
+    }
+
+    console.log("✅ Customers retrieved:", customers);
     res.json(customers);
   } catch (error) {
-    console.error("Error fetching customers:", error);
+    console.error("❌ Error fetching customers:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
