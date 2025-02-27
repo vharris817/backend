@@ -30,6 +30,37 @@ const generateWorkOrderNumber = async () => {
   }
 };
 
+const QRCode = require('qrcode');
+
+router.get('/', async (req, res) => {
+  try {
+    const workOrders = await WorkOrder.findAll({
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'name', 'email', 'phone'],
+        },
+      ],
+    });
+
+    // Generate QR Code URLs for each work order
+    const workOrdersWithQR = await Promise.all(
+      workOrders.map(async (wo) => {
+        const workOrderUrl = `https://your-frontend-url.com/workorders/${wo.id}`;
+        const qrCodeData = await QRCode.toDataURL(workOrderUrl);
+        return { ...wo.toJSON(), qrCode: qrCodeData };
+      })
+    );
+
+    res.json(workOrdersWithQR);
+  } catch (error) {
+    console.error('Error fetching work orders:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // ✅ Fetch All Work Orders
 router.get('/', async (req, res) => {
   try {
