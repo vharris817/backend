@@ -37,6 +37,20 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ✅ Correctly fetch a customer by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const customer = await Customer.findByPk(req.params.id);
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    res.json(customer);
+  } catch (error) {
+    console.error('Error fetching customer:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Add a new customer
 router.post('/', async (req, res) => {
   try {
