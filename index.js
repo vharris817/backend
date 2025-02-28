@@ -3,6 +3,12 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config();
 
+// ✅ Fix: Allow scripts in Content Security Policy (CSP)
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self' https://backend-ejw6.onrender.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: blob:;");
+  next();
+});
+
 console.log('Connecting to database:', {
   host: process.env.DB_HOST || 'dpg-cuqug0l2ng1s73fbdg70-a.oregon-postgres.render.com',
   port: process.env.DB_PORT || 5432,
