@@ -65,22 +65,7 @@ router.get('/', async (req, res) => {
 // ✅ Fetch All Work Orders
 router.get('/', async (req, res) => {
   try {
-    const { status, customerId, sortBy, order } = req.query;
-
-    let whereClause = {};
-    if (status) whereClause.status = status;
-    if (customerId) whereClause.customerId = customerId;
-
-    let orderClause = [['createdAt', 'DESC']];
-    if (sortBy) {
-      const validSortFields = ['status', 'dueDate', 'customerId'];
-      if (validSortFields.includes(sortBy)) {
-        orderClause = [[sortBy, order === 'ASC' ? 'ASC' : 'DESC']];
-      }
-    }
-
     const workOrders = await WorkOrder.findAll({
-      where: whereClause,
       include: [
         {
           model: Customer,
@@ -89,10 +74,9 @@ router.get('/', async (req, res) => {
         },
         {
           model: WorkOrderDetails,
-          as: 'details',
+          as: 'details', // ✅ Ensure WorkOrderDetails is included
         },
       ],
-      order: orderClause,
     });
 
     // ✅ Ensure `details` is always an array
