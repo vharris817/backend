@@ -39,21 +39,22 @@ router.get('/', async (req, res) => {
         {
           model: Customer,
           as: 'customer',
-          attributes: ['id', 'name', 'email', 'phone'],
+          attributes: ['id', 'name', 'address', 'email', 'phone'],
+        },
+        {
+          model: WorkOrderDetails,
+          as: 'details', // ✅ Ensure WorkOrderDetails is included
         },
       ],
     });
 
-    // Generate QR Code URLs for each work order
-    const workOrdersWithQR = await Promise.all(
-      workOrders.map(async (wo) => {
-        const workOrderUrl = `https://your-frontend-url.com/workorders/${wo.id}`;
-        const qrCodeData = await QRCode.toDataURL(workOrderUrl);
-        return { ...wo.toJSON(), qrCode: qrCodeData };
-      })
-    );
+    // ✅ Fix: Ensure `details` is always an array
+    const workOrdersWithDetails = workOrders.map(wo => ({
+      ...wo.toJSON(),
+      details: wo.details || [],
+    }));
 
-    res.json(workOrdersWithQR);
+    res.json(workOrdersWithDetails);
   } catch (error) {
     console.error('Error fetching work orders:', error);
     res.status(500).json({ error: error.message });
