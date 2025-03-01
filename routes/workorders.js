@@ -64,18 +64,12 @@ router.get('/', async (req, res) => {
 // ✅ Fetch All Work Orders
 router.get('/', async (req, res) => {
   try {
-    const { status, customerId, sortBy, order } = req.query; // Get filter & sort params
+    const { status, customerId, sortBy, order } = req.query;
 
-    let whereClause = {}; // Build filter conditions
+    let whereClause = {};
+    if (status) whereClause.status = status;
+    if (customerId) whereClause.customerId = customerId;
 
-    if (status) {
-      whereClause.status = status; // Filter by status
-    }
-    if (customerId) {
-      whereClause.customerId = customerId; // Filter by customer
-    }
-
-    // Default sorting (by createdAt if none specified)
     let orderClause = [['createdAt', 'DESC']];
     if (sortBy) {
       const validSortFields = ['status', 'dueDate', 'customerId'];
@@ -100,7 +94,13 @@ router.get('/', async (req, res) => {
       order: orderClause,
     });
 
-    res.json(workOrders);
+    // ✅ Ensure `details` is always an array
+    const workOrdersWithDetails = workOrders.map(wo => ({
+      ...wo.toJSON(),
+      details: wo.details ? wo.details : [],
+    }));
+
+    res.json(workOrdersWithDetails);
   } catch (error) {
     console.error('Error fetching work orders:', error);
     res.status(500).json({ error: error.message });
