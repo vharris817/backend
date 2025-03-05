@@ -48,6 +48,7 @@ router.get("/:workOrderNumber", async (req, res) => {
         {
           model: WorkOrderDetails,
           as: "details",
+          attributes: ["partName", "quantity", "price", "total"], // ✅ Include parts info
         },
       ],
     });
@@ -56,7 +57,6 @@ router.get("/:workOrderNumber", async (req, res) => {
       return res.status(404).json({ error: "Work Order not found" });
     }
 
-    // ✅ Ensure `details` is always an array
     res.json({ ...workOrder.toJSON(), details: workOrder.details || [] });
   } catch (error) {
     console.error("Error fetching work order:", error);
