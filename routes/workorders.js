@@ -64,20 +64,6 @@ router.get("/:workOrderNumber", async (req, res) => {
   }
 });
 
-    // ✅ Fix: Ensure `details` is always an array
-    const workOrdersWithDetails = workOrders.map(wo => ({
-      ...wo.toJSON(),
-      details: wo.details || [],
-    }));
-
-    res.json(workOrdersWithDetails);
-  } catch (error) {
-    console.error('Error fetching work orders:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-
 // ✅ Fetch All Work Orders
 router.get('/', async (req, res) => {
   try {
