@@ -48,7 +48,7 @@ router.get("/:workOrderNumber", async (req, res) => {
         {
           model: WorkOrderDetails,
           as: "details",
-          attributes: ["partName", "quantity", "price", "total"], // ✅ Include parts info
+          attributes: ["partName", "quantity", "price", "total"],
         },
       ],
     });
@@ -57,7 +57,14 @@ router.get("/:workOrderNumber", async (req, res) => {
       return res.status(404).json({ error: "Work Order not found" });
     }
 
-    res.json({ ...workOrder.toJSON(), details: workOrder.details || [] });
+    // ✅ Convert price & total to numbers before sending to frontend
+    const detailsWithNumbers = workOrder.details.map(detail => ({
+      ...detail.toJSON(),
+      price: Number(detail.price) || 0,
+      total: Number(detail.total) || 0,
+    }));
+
+    res.json({ ...workOrder.toJSON(), details: detailsWithNumbers });
   } catch (error) {
     console.error("Error fetching work order:", error);
     res.status(500).json({ error: "Server error" });
