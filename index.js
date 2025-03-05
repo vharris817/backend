@@ -51,8 +51,19 @@ app.use('/workorders', require('./routes/workorders'));
 app.use('/dashboard', require('./routes/dashboard'));
 
 // Test Route
-app.get('/', (req, res) => {
-  res.send('Work Order Tracking API is running!');
+router.get("/:workOrderNumber", async (req, res) => {
+  try {
+    const { workOrderNumber } = req.params;
+    const workOrder = await db.WorkOrders.findOne({ where: { workOrderNumber } });
+
+    if (!workOrder) {
+      return res.status(404).json({ error: "Work Order not found" });
+    }
+
+    res.json(workOrder);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // **Fix: Use Render's PORT variable**
