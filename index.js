@@ -51,7 +51,7 @@ app.use('/workorders', require('./routes/workorders'));
 app.use('/dashboard', require('./routes/dashboard'));
 
 // Test Route
-router.get("/:workOrderNumber", async (req, res) => {
+app.get("/:workOrderNumber", async (req, res) => {
   try {
     const { workOrderNumber } = req.params;
     const workOrder = await db.WorkOrders.findOne({ where: { workOrderNumber } });
