@@ -32,21 +32,37 @@ const generateWorkOrderNumber = async () => {
 
 const QRCode = require('qrcode');
 
-router.get('/', async (req, res) => {
+router.get("/:workOrderNumber", async (req, res) => {
   try {
-    const workOrders = await WorkOrder.findAll({
+    const { workOrderNumber } = req.params;
+
+    // ✅ Fetch the work order using `workOrderNumber`
+    const workOrder = await WorkOrder.findOne({
+      where: { workOrderNumber },
       include: [
         {
           model: Customer,
-          as: 'customer',
-          attributes: ['id', 'name', 'address', 'email', 'phone'],
+          as: "customer",
+          attributes: ["id", "name", "address", "email", "phone"],
         },
         {
           model: WorkOrderDetails,
-          as: 'details', // ✅ Ensure WorkOrderDetails is included
+          as: "details",
         },
       ],
     });
+
+    if (!workOrder) {
+      return res.status(404).json({ error: "Work Order not found" });
+    }
+
+    // ✅ Ensure `details` is always an array
+    res.json({ ...workOrder.toJSON(), details: workOrder.details || [] });
+  } catch (error) {
+    console.error("Error fetching work order:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
     // ✅ Fix: Ensure `details` is always an array
     const workOrdersWithDetails = workOrders.map(wo => ({
