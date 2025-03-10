@@ -8,6 +8,22 @@ const users = []; // Temporary array for testing (Replace with DB later)
 
 const SECRET_KEY = "your_secret_key"; // Change in production
 
+const { Sequelize, DataTypes } = require("sequelize");
+const sequelize = require("../database"); // Import DB connection
+
+// ✅ Define User Model (Ensures Table Exists)
+const User = sequelize.define("User", {
+  email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  password: { type: DataTypes.STRING, allowNull: false },
+  role: { type: DataTypes.STRING, allowNull: false },
+});
+
+// ✅ Sync Database (Auto-Creates Table)
+sequelize.sync()
+  .then(() => console.log("✅ Users table synced"))
+  .catch(err => console.error("❌ Database sync error:", err));
+
+
 // ✅ Register User Route
 router.post(
   "/register",
