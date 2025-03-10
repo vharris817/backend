@@ -1,30 +1,24 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
+const { Sequelize, DataTypes } = require("sequelize");
 
 const router = express.Router();
-const users = []; // Temporary array for testing (Replace with DB later)
-
-const SECRET_KEY = "your_secret_key"; // Change in production
-
-const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../database"); // Import DB connection
 
-// ✅ Define User Model (Ensures Table Exists)
+// ✅ Define User Model (Ensures users are stored in DB)
 const User = sequelize.define("User", {
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   password: { type: DataTypes.STRING, allowNull: false },
-  role: { type: DataTypes.STRING, allowNull: false },
-});
+  role: { type: DataTypes.STRING, allowNull: false, validate: { isIn: [["admin", "user"]] } },
+}, { tableName: "users" }); // ✅ Ensure correct table name
 
-// ✅ Sync Database (Auto-Creates Table)
+// ✅ Sync database (Ensures "users" table exists)
 sequelize.sync()
   .then(() => console.log("✅ Users table synced"))
   .catch(err => console.error("❌ Database sync error:", err));
 
-
-// ✅ Register User Route
+// ✅ Register User Route (Fixed to Store in DB)
 router.post(
   "/register",
   [
@@ -37,13 +31,28 @@ router.post(
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     const { email, password, role } = req.body;
-    const existingUser = users.find((u) => u.email === email);
-    if (existingUser) return res.status(400).json({ msg: "User already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    users.push({ email, password: hashedPassword, role });
+    try {
+      // ✅ Check if user already exists
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) return res.status(400).json({ msg: "User already exists" });
 
-    res.json({ msg: "User registered successfully", users });
+      // ✅ Hash the password before storing
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // ✅ Store user in the database
+      const newUser = await User.create({
+        email,
+        password: hashedPassword,
+        role,
+      });
+
+      res.json({ msg: "✅ User registered successfully!", user: newUser });
+
+    } catch (err) {
+      console.error("❌ Error registering user:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
   }
 );
 
