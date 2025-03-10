@@ -6,16 +6,22 @@ const { Sequelize, DataTypes } = require("sequelize");
 const router = express.Router();
 const sequelize = require("../database"); // Import DB connection
 
-// ✅ Define User Model (Ensures users are stored in DB)
+// ✅ Define User Model with Correct Timestamp Column Names
 const User = sequelize.define("User", {
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   password: { type: DataTypes.STRING, allowNull: false },
   role: { type: DataTypes.STRING, allowNull: false, validate: { isIn: [["admin", "user"]] } },
-}, { tableName: "users" }); // ✅ Ensure correct table name
+}, 
+{ 
+  tableName: "users", // ✅ Ensure lowercase table name
+  timestamps: true,  // ✅ Enable timestamps
+  createdAt: "created_at",  // ✅ Fix column name mismatch
+  updatedAt: "updated_at",  // ✅ Fix column name mismatch
+});
 
 // ✅ Sync database (Ensures "users" table exists)
 sequelize.sync()
-  .then(() => console.log("✅ Users table synced"))
+  .then(() => console.log("✅ Users table synced with correct timestamps"))
   .catch(err => console.error("❌ Database sync error:", err));
 
 // ✅ Register User Route (Fixed to Store in DB)
