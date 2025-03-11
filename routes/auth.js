@@ -8,23 +8,23 @@ const sequelize = require("../database"); // Import DB connection
 
 // ✅ Define User Model with Correct Timestamp Column Names
 const User = sequelize.define("User", {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   password: { type: DataTypes.STRING, allowNull: false },
   role: { type: DataTypes.STRING, allowNull: false, validate: { isIn: [["admin", "user"]] } },
 }, 
 { 
-  tableName: "users", // ✅ Ensure lowercase table name
-  timestamps: true,  // ✅ Enable timestamps
-  createdAt: "created_at",  // ✅ Fix column name mismatch
-  updatedAt: "updated_at",  // ✅ Fix column name mismatch
+  tableName: "users",  // ✅ Ensure lowercase table name
+  timestamps: true,     // ✅ Enable timestamps
+  underscored: true,    // ✅ Use `created_at` and `updated_at`
 });
 
-// ✅ Sync database (Ensures "users" table exists)
-sequelize.sync()
+// ✅ Force sync the model (Only Run ONCE, Then Remove `force: true`)
+sequelize.sync({ alter: true }) 
   .then(() => console.log("✅ Users table synced with correct timestamps"))
   .catch(err => console.error("❌ Database sync error:", err));
 
-// ✅ Register User Route (Fixed to Store in DB)
+// ✅ Register User Route
 router.post(
   "/register",
   [
@@ -53,7 +53,7 @@ router.post(
         role,
       });
 
-      res.json({ msg: "✅ User registered successfully!", user: newUser });
+      res.json({ msg: "✅ User registered successfully!", user: { email: newUser.email, role: newUser.role } });
 
     } catch (err) {
       console.error("❌ Error registering user:", err);
@@ -63,3 +63,4 @@ router.post(
 );
 
 module.exports = router;
+
