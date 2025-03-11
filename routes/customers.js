@@ -1,11 +1,11 @@
-const express = require("express");
+// backend/routes/customers.js
+const express = require('express');
 const router = express.Router();
-const sequelize = require("../database"); // Import Sequelize instance
-const Customer = require("../models/Customer");
-const { authenticateUser, authorizeAdmin } = require("../middleware/authMiddleware"); // ✅ Import auth middleware
+const sequelize = require('../database'); // Import Sequelize instance
+const Customer = require('../models/Customer');
 
 // Debug: Manually run a raw SQL query
-router.get("/debug", authenticateUser, async (req, res) => {
+router.get('/debug', async (req, res) => {
   try {
     console.log("🔍 Running raw SQL query...");
     const [results] = await sequelize.query("SELECT * FROM customers LIMIT 5;");
@@ -18,12 +18,12 @@ router.get("/debug", authenticateUser, async (req, res) => {
   }
 });
 
-// ✅ Fetch all customers (Accessible to all logged-in users)
-router.get("/", authenticateUser, async (req, res) => {
+// Fetch all customers
+router.get('/', async (req, res) => {
   try {
-    console.log("🔍 Fetching customers...");
+    console.log("🔍 Fetching customers..."); // Log in Render logs
     const customers = await Customer.findAll();
-
+    
     if (customers.length === 0) {
       console.log("⚠️ No customers found!");
       return res.status(404).json({ message: "No customers found" });
@@ -37,67 +37,66 @@ router.get("/", authenticateUser, async (req, res) => {
   }
 });
 
-// ✅ Fetch a specific customer by ID (Accessible to all logged-in users)
-router.get("/:id", authenticateUser, async (req, res) => {
+// ✅ Correctly fetch a customer by ID
+router.get('/:id', async (req, res) => {
   try {
     const customer = await Customer.findByPk(req.params.id);
     if (!customer) {
-      return res.status(404).json({ error: "Customer not found" });
+      return res.status(404).json({ error: 'Customer not found' });
     }
     res.json(customer);
   } catch (error) {
-    console.error("❌ Error fetching customer:", error);
+    console.error('Error fetching customer:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ✅ Add a new customer (Admins Only)
-router.post("/", authenticateUser, authorizeAdmin, async (req, res) => {
+// Add a new customer
+router.post('/', async (req, res) => {
   try {
     const newCustomer = await Customer.create(req.body);
     res.status(201).json(newCustomer);
   } catch (error) {
-    console.error("❌ Error adding customer:", error);
-    res.status(500).json({ error: "Failed to add customer" });
+    console.error('Error adding customer:', error);
+    res.status(500).json({ error: 'Failed to add customer' });
   }
 });
 
-// ✅ Update a customer (Admins Only)
-router.put("/:id", authenticateUser, authorizeAdmin, async (req, res) => {
+// Update a customer
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const updatedCustomer = req.body;
 
   try {
     const customer = await Customer.findByPk(id);
     if (!customer) {
-      return res.status(404).json({ error: "Customer not found" });
+      return res.status(404).json({ error: 'Customer not found' });
     }
 
     await customer.update(updatedCustomer);
-    res.json({ msg: "✅ Customer updated", customer });
+    res.json(customer);
   } catch (error) {
-    console.error("❌ Error updating customer:", error);
-    res.status(500).json({ error: "Failed to update customer" });
+    console.error('Error updating customer:', error);
+    res.status(500).json({ error: 'Failed to update customer' });
   }
 });
 
-// ✅ Delete a customer (Admins Only)
-router.delete("/:id", authenticateUser, authorizeAdmin, async (req, res) => {
+// Delete a customer
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
     const customer = await Customer.findByPk(id);
     if (!customer) {
-      return res.status(404).json({ error: "Customer not found" });
+      return res.status(404).json({ error: 'Customer not found' });
     }
 
     await customer.destroy();
-    res.json({ msg: "✅ Customer deleted successfully" });
+    res.json({ message: 'Customer deleted successfully' });
   } catch (error) {
-    console.error("❌ Error deleting customer:", error);
-    res.status(500).json({ error: "Failed to delete customer" });
+    console.error('Error deleting customer:', error);
+    res.status(500).json({ error: 'Failed to delete customer' });
   }
 });
 
 module.exports = router;
-
