@@ -1,12 +1,13 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
 const { Sequelize, DataTypes } = require("sequelize");
 
 const router = express.Router();
 const sequelize = require("../database"); // Import DB connection
 
-// ✅ Define User Model with Correct Timestamp Column Names
+// ✅ Define User Model
 const User = sequelize.define("User", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
@@ -19,10 +20,12 @@ const User = sequelize.define("User", {
   underscored: true,    // ✅ Use `created_at` and `updated_at`
 });
 
-// ✅ Force sync the model (Only Run ONCE, Then Remove `force: true`)
-sequelize.sync({ alter: true }) 
+// ✅ Sync database (Ensures "users" table exists)
+sequelize.sync()
   .then(() => console.log("✅ Users table synced with correct timestamps"))
   .catch(err => console.error("❌ Database sync error:", err));
+
+const SECRET_KEY = "your_secret_key"; // Change this to a secure key in production
 
 // ✅ Register User Route
 router.post(
@@ -57,6 +60,35 @@ router.post(
 
     } catch (err) {
       console.error("❌ Error registering user:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
+  }
+);
+
+// ✅ Login Route (NEW)
+router.post(
+  "/login",
+  [check("email", "Enter a valid email").isEmail(), check("password", "Password required").exists()],
+  async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+      // ✅ Fetch user from database
+      const user = await User.findOne({ where: { email } });
+
+      if (!user) return res.status(400).json({ msg: "❌ Invalid credentials" });
+
+      // ✅ Compare hashed passwords
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) return res.status(400).json({ msg: "❌ Invalid credentials" });
+
+      // ✅ Generate JWT token
+      const token = jwt.sign({ email, role: user.role }, SECRET_KEY, { expiresIn: "1h" });
+
+      res.json({ msg: "✅ Login successful", token, role: user.role });
+
+    } catch (err) {
+      console.error("❌ Login Error:", err);
       res.status(500).json({ msg: "Server error" });
     }
   }
