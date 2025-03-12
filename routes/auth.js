@@ -2,30 +2,10 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
-const { Sequelize, DataTypes } = require("sequelize");
+const { User } = require("../models"); // ✅ Import User model
 
 const router = express.Router();
-const sequelize = require("../database"); // Import DB connection
-
-// ✅ Define User Model
-const User = sequelize.define("User", {
-  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  email: { type: DataTypes.STRING, allowNull: false, unique: true },
-  password: { type: DataTypes.STRING, allowNull: false },
-  role: { type: DataTypes.STRING, allowNull: false, validate: { isIn: [["admin", "user"]] } },
-}, 
-{ 
-  tableName: "users",  // ✅ Ensure lowercase table name
-  timestamps: true,     // ✅ Enable timestamps
-  underscored: true,    // ✅ Use `created_at` and `updated_at`
-});
-
-// ✅ Sync database (Ensures "users" table exists)
-sequelize.sync()
-  .then(() => console.log("✅ Users table synced with correct timestamps"))
-  .catch(err => console.error("❌ Database sync error:", err));
-
-const SECRET_KEY = "your_secret_key"; // Change this to a secure key in production
+const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key"; // ✅ Use ENV variable
 
 // ✅ Register User Route
 router.post(
@@ -56,7 +36,7 @@ router.post(
         role,
       });
 
-      res.json({ msg: "✅ User registered successfully!", user: { email: newUser.email, role: newUser.role } });
+      res.json({ msg: "✅ User registered successfully!", user: { id: newUser.id, email: newUser.email, role: newUser.role } });
 
     } catch (err) {
       console.error("❌ Error registering user:", err);
@@ -65,34 +45,46 @@ router.post(
   }
 );
 
-// ✅ Login Route (NEW)
-router.post(
-  "/login",
-  [check("email", "Enter a valid email").isEmail(), check("password", "Password required").exists()],
-  async (req, res) => {
-    const { email, password } = req.body;
+// ✅ Login Route
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    try {
-      // ✅ Fetch user from database
-      const user = await User.findOne({ where: { email } });
+  try {
+    const user = await User.findOne({ where: { email } });
 
-      if (!user) return res.status(400).json({ msg: "❌ Invalid credentials" });
-
-      // ✅ Compare hashed passwords
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) return res.status(400).json({ msg: "❌ Invalid credentials" });
-
-      // ✅ Generate JWT token
-      const token = jwt.sign({ email, role: user.role }, SECRET_KEY, { expiresIn: "1h" });
-
-      res.json({ msg: "✅ Login successful", token, role: user.role });
-
-    } catch (err) {
-      console.error("❌ Login Error:", err);
-      res.status(500).json({ msg: "Server error" });
+    if (!user) {
+      return res.status(400).json({ msg: "User not found" });
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    // ✅ Ensure both `token` and `user` are returned
+    res.json({
+      msg: "✅ Login successful",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ msg: "Server error" });
   }
-);
+});
 
 module.exports = router;
+
 
