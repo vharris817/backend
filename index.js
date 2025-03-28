@@ -12,18 +12,18 @@ dotenv.config();
 const app = express();
 
 // ✅ Security Middleware (Proper Order)
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-      },
-    },
-  })
-);
+// app.use(
+//helmet({
+  //  contentSecurityPolicy: {
+  //    directives: {
+  //      defaultSrc: ["'self'"],
+  //      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+ //       objectSrc: ["'none'"],
+ //       upgradeInsecureRequests: [],
+//      },
+//    },
+ // })
+//);
 
 // ✅ Fix: Allow Scripts in Content Security Policy (CSP)
 app.use((req, res, next) => {
